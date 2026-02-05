@@ -9,9 +9,30 @@ from tensorflow.keras.models import load_model
 word_index = imdb.get_word_index()
 reverse_word_index = {value: key for key, value in word_index.items()}
 
+from keras.layers import Embedding, SimpleRNN
+
+# Custom wrappers to strip out unsupported legacy arguments
+def embedding_custom(**kwargs):
+    kwargs.pop("batch_input_shape", None)
+    kwargs.pop("input_length", None)
+    return Embedding(**kwargs)
+
+def simple_rnn_custom(**kwargs):
+    kwargs.pop("time_major", None)
+    return SimpleRNN(**kwargs)
+
+# Load the model with patched deserialization
+model = load_model(
+    "simple_rnn_imdb.keras",   # or "simple_rnn_imdb.h5" if you kept the old file
+    custom_objects={
+        "Embedding": embedding_custom,
+        "SimpleRNN": simple_rnn_custom
+    }
+)
+
 # Load the pre-trained model with ReLU activation
 # model = load_model('simple_rnn_imdb.h5')
-model = load_model("simple_rnn_imdb.keras")
+# model = load_model("simple_rnn_imdb.keras")
 
 
 # Step 2: Helper Functions
